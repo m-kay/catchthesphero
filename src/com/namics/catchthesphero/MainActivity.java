@@ -1,21 +1,26 @@
 package com.namics.catchthesphero;
 
 
+import com.namics.catchthesphero.robot.DriveController;
+import com.namics.catchthesphero.robot.DriveInput;
+
 import orbotix.robot.base.RGBLEDOutputCommand;
 import orbotix.robot.base.Robot;
-import orbotix.robot.base.RollCommand;
 import orbotix.view.connection.SpheroConnectionView;
 import orbotix.view.connection.SpheroConnectionView.OnRobotConnectionEventListener;
 import android.os.Bundle;
 import android.app.Activity;
-import android.view.Menu;
 import android.view.View;
-import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
 	private Robot mRobot;
+
+	private DriveController controller;
+
+	private DriveInput input;
 
 	/**
 	 * The Sphero Connection View
@@ -25,8 +30,29 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		input = new DriveInput();
+
 		setContentView(R.layout.activity_main);
 		findViewById(R.id.buttonView).requestFocus();
+
+		SeekBar speedBar = ((SeekBar) findViewById(R.id.speedBar));
+
+		speedBar.setProgress((int) (input.getSpeed() * 100));
+
+		speedBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {}
+
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {}
+
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				input.setSpeed(((float) progress) / 100);
+			}
+		});
 
 		mSpheroConnectionView = (SpheroConnectionView) findViewById(R.id.sphero_connection_view);
 
@@ -56,8 +82,10 @@ public class MainActivity extends Activity {
 						mRobot = robot;
 
 						mSpheroConnectionView.setVisibility(View.GONE);
-						RGBLEDOutputCommand.sendCommand(mRobot, 0, 0, 0);
+						RGBLEDOutputCommand.sendCommand(mRobot, 255, 0, 255);
 
+						controller = new DriveController(input, mRobot);
+						controller.start();
 					}
 
 					@Override
@@ -67,46 +95,49 @@ public class MainActivity extends Activity {
 								.show();
 					}
 				});
-
-		View.OnClickListener btnActions = new View.OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				switch (v.getId()) {
-				case R.id.btnRed:
-					RGBLEDOutputCommand.sendCommand(mRobot, 255, 0, 0);
-					break;
-				case R.id.btnBlue:
-					RGBLEDOutputCommand.sendCommand(mRobot, 0, 0, 255);
-					break;
-				case R.id.btnGreen:
-					RGBLEDOutputCommand.sendCommand(mRobot, 0, 255, 0);
-					break;
-				default:
-					RGBLEDOutputCommand.sendCommand(mRobot, 0, 0, 0);
-				}
-
-			}
-		};
-
-		Button btnRed = (Button) findViewById(R.id.btnRed);
-		btnRed.setOnClickListener(btnActions);
-
-		Button btnBlue = (Button) findViewById(R.id.btnBlue);
-		btnBlue.setOnClickListener(btnActions);
-
-		Button btnGreen = (Button) findViewById(R.id.btnGreen);
-		btnGreen.setOnClickListener(btnActions);
-		
-		mSpheroConnectionView.showSpheros();
-
+		if (mRobot == null) {
+			mSpheroConnectionView.showSpheros();
+		}
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
+	public void onControllClick(View v) {
+		switch (v.getId()) {
+		case R.id.left:
+			input.setAngle(269f);
+			break;
+		case R.id.right:
+			input.setAngle(89f);
+			break;
+		case R.id.fwd:
+			input.setAngle(0f);
+			break;
+		case R.id.bwd:
+			input.setAngle(179);
+			break;
+		case R.id.stop:
+			input.setAngle(0f);
+			input.setSpeed(0f);
+			break;
+		default:
+			input.setAngle(0f);
+			input.setSpeed(0f);
+		}
+	}
+
+	public void onRGBClick(View v) {
+		switch (v.getId()) {
+		case R.id.btnRed:
+			RGBLEDOutputCommand.sendCommand(mRobot, 255, 0, 0);
+			break;
+		case R.id.btnBlue:
+			RGBLEDOutputCommand.sendCommand(mRobot, 0, 0, 255);
+			break;
+		case R.id.btnGreen:
+			RGBLEDOutputCommand.sendCommand(mRobot, 0, 255, 0);
+			break;
+		default:
+			RGBLEDOutputCommand.sendCommand(mRobot, 0, 0, 0);
+		}
 	}
 
 }
