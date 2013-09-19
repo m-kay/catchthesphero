@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <orbotix.view.connection.SpheroConnectionView
+        android:id="@+id/sphero_connection_view"
+        android:layout_width="fill_parent"
+        android:layout_height="48dp"
+        android:background="#FFF"
+        android:visibility="invisible" >
+    </orbotix.view.connection.SpheroConnectionView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:id="@+id/buttonView"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:descendantFocusability="beforeDescendants"
+            android:focusableInTouchMode="true"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/btnRed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Red" />
+
+            <Button
+                android:id="@+id/btnGreen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Green" />
+
+            <Button
+                android:id="@+id/btnBlue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Blue" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/button1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Button" />
+
+            <Button
+                android:id="@+id/button2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Button" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>
