@@ -3,33 +3,34 @@ package com.namics.catchthesphero.robot;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import orbotix.robot.base.Robot;
-import orbotix.robot.base.RollCommand;
-
 public class DriveController extends TimerTask{
-
-	private DriveInput input;
-	private Robot robot;
-	private Timer timer;
 	
-	public DriveController(DriveInput input, Robot robot){
-		this.input = input;
-		this.robot = robot;
+	private Timer timer;
+	private DriveChangeHandler handler;
+	
+	public DriveController(DriveChangeHandler handler){
 		this.timer = new Timer();
+		this.handler = handler;
 	}
 	
 	@Override
 	public void run() {
-			RollCommand.sendCommand(robot, input.getAngle(), input.getSpeed());
+		handler.driveApply();
 	}
 	
 	public void stopRoll(){
 		this.timer.cancel();
-		RollCommand.sendCommand(robot, 0f, 0f);
+		handler.driveStop();
 	}
 	
 	public void start(){
-		this.timer.scheduleAtFixedRate(this, (long) (300 + (700 * input.getSpeed())), 200);
+		// 
+		this.timer.scheduleAtFixedRate(this, 0, 200);
+	}
+	
+	public void start(long delay){
+		// 
+		this.timer.scheduleAtFixedRate(this, delay, 200);
 	}
 }
 

@@ -1,6 +1,7 @@
 package com.namics.catchthesphero;
 
 
+import com.namics.catchthesphero.robot.DriveChangeHandler;
 import com.namics.catchthesphero.robot.DriveController;
 import com.namics.catchthesphero.robot.DriveInput;
 
@@ -19,7 +20,7 @@ public class MainActivity extends Activity {
 
 	private Robot mRobot;
 
-	private DriveController controller;
+	private DriveChangeHandler driveHandler;
 
 	private DriveInput input;
 	
@@ -87,8 +88,7 @@ public class MainActivity extends Activity {
 						mSpheroConnectionView.setVisibility(View.GONE);
 						RGBLEDOutputCommand.sendCommand(mRobot, 255, 0, 255);
 
-						controller = new DriveController(input, mRobot);
-						controller.start();
+						driveHandler = new DriveChangeHandler(input, mRobot);
 					}
 
 					@Override
@@ -104,14 +104,8 @@ public class MainActivity extends Activity {
 	}
 
 	public void onControllClick(View v) {
-		input.setSpeed(0f);
-		RollCommand.sendCommand(mRobot, 0f, 0f);
-		controller.stopRoll();
-		
-		input.setSpeed(((float) speedBar.getProgress()) / 100);
-		controller = new DriveController(input, mRobot);
-		controller.start();
-		
+		driveHandler.directionChange((float) speedBar.getProgress() / 100);
+				
 		switch (v.getId()) {
 		case R.id.left:
 			input.setAngle(269f);
