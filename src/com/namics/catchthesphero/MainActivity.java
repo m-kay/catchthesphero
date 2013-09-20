@@ -6,6 +6,7 @@ import com.namics.catchthesphero.robot.DriveInput;
 
 import orbotix.robot.base.RGBLEDOutputCommand;
 import orbotix.robot.base.Robot;
+import orbotix.robot.base.RollCommand;
 import orbotix.view.connection.SpheroConnectionView;
 import orbotix.view.connection.SpheroConnectionView.OnRobotConnectionEventListener;
 import android.os.Bundle;
@@ -21,6 +22,8 @@ public class MainActivity extends Activity {
 	private DriveController controller;
 
 	private DriveInput input;
+	
+	private SeekBar speedBar;
 
 	/**
 	 * The Sphero Connection View
@@ -36,7 +39,7 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		findViewById(R.id.buttonView).requestFocus();
 
-		SeekBar speedBar = ((SeekBar) findViewById(R.id.speedBar));
+		speedBar = ((SeekBar) findViewById(R.id.speedBar));
 
 		speedBar.setProgress((int) (input.getSpeed() * 100));
 
@@ -101,12 +104,20 @@ public class MainActivity extends Activity {
 	}
 
 	public void onControllClick(View v) {
+		input.setSpeed(0f);
+		RollCommand.sendCommand(mRobot, 0f, 0f);
+		controller.stopRoll();
+		
+		input.setSpeed(((float) speedBar.getProgress()) / 100);
+		controller = new DriveController(input, mRobot);
+		controller.start();
+		
 		switch (v.getId()) {
 		case R.id.left:
 			input.setAngle(269f);
 			break;
 		case R.id.right:
-			input.setAngle(89f);
+			input.setAngle(89f); 
 			break;
 		case R.id.fwd:
 			input.setAngle(0f);

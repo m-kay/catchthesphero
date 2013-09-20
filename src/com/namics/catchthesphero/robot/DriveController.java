@@ -29,7 +29,7 @@ public class DriveController extends TimerTask{
 	}
 	
 	public void start(){
-		this.timer.scheduleAtFixedRate(this, 0, 200);
+		this.timer.scheduleAtFixedRate(this, (long) (300 + (700 * input.getSpeed())), 200);
 	}
 }
 
