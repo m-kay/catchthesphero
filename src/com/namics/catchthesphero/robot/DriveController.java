@@ -18,13 +18,11 @@ public class DriveController extends TimerTask{
 		handler.driveApply();
 	}
 	
-	public void stopRoll(){
+	public void stopTimer(){
 		this.timer.cancel();
-		handler.driveStop();
 	}
 	
 	public void start(){
-		// 
 		this.timer.scheduleAtFixedRate(this, 0, 200);
 	}
 	

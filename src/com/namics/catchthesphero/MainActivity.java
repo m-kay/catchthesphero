@@ -2,29 +2,41 @@ package com.namics.catchthesphero;
 
 
 import com.namics.catchthesphero.robot.DriveChangeHandler;
-import com.namics.catchthesphero.robot.DriveController;
 import com.namics.catchthesphero.robot.DriveInput;
 
+import orbotix.robot.base.CollisionDetectedAsyncData;
+import orbotix.robot.base.ConfigureCollisionDetectionCommand;
+import orbotix.robot.base.DeviceAsyncData;
+import orbotix.robot.base.DeviceMessenger;
 import orbotix.robot.base.RGBLEDOutputCommand;
 import orbotix.robot.base.Robot;
 import orbotix.robot.base.RollCommand;
+import orbotix.robot.base.CollisionDetectedAsyncData.CollisionPower;
+import orbotix.robot.base.DeviceMessenger.AsyncDataListener;
+import orbotix.robot.sensor.Acceleration;
 import orbotix.view.connection.SpheroConnectionView;
 import orbotix.view.connection.SpheroConnectionView.OnRobotConnectionEventListener;
 import android.os.Bundle;
+import android.os.Handler;
 import android.app.Activity;
 import android.view.View;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
 	private Robot mRobot;
+	
+	private TextView mCollisionText;
 
 	private DriveChangeHandler driveHandler;
 
 	private DriveInput input;
 	
 	private SeekBar speedBar;
+	
+	private Handler mHandler = new Handler();
 
 	/**
 	 * The Sphero Connection View
@@ -89,6 +101,21 @@ public class MainActivity extends Activity {
 						RGBLEDOutputCommand.sendCommand(mRobot, 255, 0, 255);
 
 						driveHandler = new DriveChangeHandler(input, mRobot);
+						
+						// Calling Configure Collision Detection Command right after the robot connects, will not work
+						// You need to wait a second for the robot to initialize
+						mHandler.postDelayed(new Runnable() {
+		                    @Override
+		                    public void run() {
+		        				// Start streaming collision detection data
+		        				//// First register a listener to process the data
+		        				DeviceMessenger.getInstance().addAsyncDataListener(mRobot,
+		        						mCollisionListener);
+
+		        				ConfigureCollisionDetectionCommand.sendCommand(mRobot, ConfigureCollisionDetectionCommand.DEFAULT_DETECTION_METHOD,
+		        						45, 45, 100, 100, 100);
+		                    }
+		                }, 1000);
 					}
 
 					@Override
@@ -144,5 +171,27 @@ public class MainActivity extends Activity {
 			RGBLEDOutputCommand.sendCommand(mRobot, 0, 0, 0);
 		}
 	}
+	
+	private final AsyncDataListener mCollisionListener = new AsyncDataListener() {
+
+		public void onDataReceived(DeviceAsyncData asyncData) {
+			if (asyncData instanceof CollisionDetectedAsyncData) {
+				final CollisionDetectedAsyncData collisionData = (CollisionDetectedAsyncData) asyncData;
+				
+				CollisionPower power = collisionData.getImpactPower();
+
+				if (power.x + power.y >= 160) {
+					mCollisionText = (TextView) findViewById(R.id.collisionText);
+					mCollisionText.setText(mCollisionText.getText() + "Bang! " + power.x + " " + power.y +"\n");
+					speedBar.setProgress(30);
+					input.setSpeed(0.3f);
+					// wrong calculation. Correct would be something like RemainingOf((input.getAngle() + 180) % 360) 
+					Float angle = (float) (359 - input.getAngle());
+					input.setAngle(angle);
+					RollCommand.sendCommand(mRobot, angle, input.getSpeed(), true);
+				}
+			}
+		}
+	};
 
 }
